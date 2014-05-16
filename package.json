@@ -1,0 +1,28 @@
+{
+  "name": "jasny",
+  "version": "0.0.0",
+  "description": "Jasny http web framework for nodejs",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "jasmine-node spec/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/finalclass/jasny.git"
+  },
+  "keywords": [
+    "http",
+    "server",
+    "framework"
+  ],
+  "author": "Szymon Wygnański <s@finalclass.net> (http://finalclass.net/)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/finalclass/jasny/issues"
+  },
+  "homepage": "https://github.com/finalclass/jasny",
+  "dependencies": {
+    "express": "~4.2.0",
+    "body-parser": "~1.2.0"
+  }
+}
