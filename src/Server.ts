@@ -1,48 +1,56 @@
+/// <reference path="../typings/tsd.d.ts" />
+
 import Config = require('./Config');
-import ActionDefinition = require('./ActionDefinition');
+import Route = require('./Route');
 import express = require('express');
 import path = require('path');
 import Action = require('./Action');
+import DependencyInjectionContainer = require('./DependencyInjectionContainer');
 var bodyParser = require('body-parser');
 
 class Server {
 
   public config:Config;
-  private actionDefinitions:ActionDefinition[];
+  private routes:Route[];
   private app:express.Application;
+  private _di:DependencyInjectionContainer
 
   constructor() {
-    this.actionDefinitions = [];
+    this.routes = [];
     this.app = express();
     this.app.use(bodyParser());
     this.config = new Config();
+    this._di = new DependencyInjectionContainer();
   }
 
   public listen():void {
     if (this.config.allowCORSFromAll) {
       this.allowCORSFromAll();
     }
-    if (this.config.actionsDir) {
-      this.initAllActions();
-    }
+
     if (this.config.publicDir) {
       this.enableStaticFileAccess();
     }
 
+    this.initAllRoutes();
     this.app.listen(this.config.port);
   }
 
-  public addAction(method:string, path:string, actionSubDir:string, actionName:string):void {
-    this.actionDefinitions.push(new ActionDefinition(method, path, actionSubDir, actionName));
+  public addRoute(route:string, Action:new()=>Action) {
+    this.routes.push(new Route(route, Action));
   }
 
-  private initAllActions() : void {
-    this.actionDefinitions.forEach((def:ActionDefinition) => {
-      var klass:new()=>Action = <new()=>Action>require(path.join(this.config.actionsDir, def.actionSubDir, def.className));
+  public get di() : DependencyInjectionContainer {
+    return this._di;
+  }
 
-      this.app[def.method](def.urlPath, (req:express.Request, res:express.Response):void => {
-        var action:Action = new klass();
-        action.server = this;
+  private initAllRoutes() : void {
+    this.routes.forEach((route:Route) => {
+      this.app[route.method](route.urlPath, (req:express.Request, res:express.Response):void => {
+        var action:Action = new route.Action();
+        if (!this.di.resolveBean(action)) {
+          throw new Error('Unresolved dependencies while injecting into action');
+        }
         action.req = req;
         action.res = res;
         action.execute();

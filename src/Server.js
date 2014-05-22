@@ -1,43 +1,52 @@
+/// <reference path="../typings/tsd.d.ts" />
 var Config = require('./Config');
-var ActionDefinition = require('./ActionDefinition');
+var Route = require('./Route');
 var express = require('express');
-var path = require('path');
 
+var DependencyInjectionContainer = require('./DependencyInjectionContainer');
 var bodyParser = require('body-parser');
 
 var Server = (function () {
     function Server() {
-        this.actionDefinitions = [];
+        this.routes = [];
         this.app = express();
         this.app.use(bodyParser());
         this.config = new Config();
+        this._di = new DependencyInjectionContainer();
     }
     Server.prototype.listen = function () {
         if (this.config.allowCORSFromAll) {
             this.allowCORSFromAll();
         }
-        if (this.config.actionsDir) {
-            this.initAllActions();
-        }
+
         if (this.config.publicDir) {
             this.enableStaticFileAccess();
         }
 
+        this.initAllRoutes();
         this.app.listen(this.config.port);
     };
 
-    Server.prototype.addAction = function (method, path, actionSubDir, actionName) {
-        this.actionDefinitions.push(new ActionDefinition(method, path, actionSubDir, actionName));
+    Server.prototype.addRoute = function (route, Action) {
+        this.routes.push(new Route(route, Action));
     };
 
-    Server.prototype.initAllActions = function () {
-        var _this = this;
-        this.actionDefinitions.forEach(function (def) {
-            var klass = require(path.join(_this.config.actionsDir, def.actionSubDir, def.className));
+    Object.defineProperty(Server.prototype, "di", {
+        get: function () {
+            return this._di;
+        },
+        enumerable: true,
+        configurable: true
+    });
 
-            _this.app[def.method](def.urlPath, function (req, res) {
-                var action = new klass();
-                action.server = _this;
+    Server.prototype.initAllRoutes = function () {
+        var _this = this;
+        this.routes.forEach(function (route) {
+            _this.app[route.method](route.urlPath, function (req, res) {
+                var action = new route.Action();
+                if (!_this.di.resolveBean(action)) {
+                    throw new Error('Unresolved dependencies while injecting into action');
+                }
                 action.req = req;
                 action.res = res;
                 action.execute();

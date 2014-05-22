@@ -3,7 +3,6 @@ var Config = (function () {
         this.port = 3913;
         this.allowCORSFromAll = false;
         this.publicDir = '../public';
-        this.actionsDir = 'actions';
     }
     return Config;
 })();

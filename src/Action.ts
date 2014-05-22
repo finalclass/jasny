@@ -1,13 +1,19 @@
-import Server = require('./Server');
+/// <reference path="../typings/tsd.d.ts" />
+
 import express = require('express');
 
 class Action {
 
-  public server:Server;
+  public inject:Object[] = [];
+
   public req:express.Request;
   public res:express.Response;
 
   constructor() {
+
+  }
+
+  public ready():void {
 
   }
 

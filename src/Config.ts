@@ -1,7 +1,6 @@
 class Config {
 
   public publicDir:string;
-  public actionsDir:string;
   public port:number;
   public allowCORSFromAll:boolean;
 
@@ -9,7 +8,6 @@ class Config {
     this.port = 3913;
     this.allowCORSFromAll = false;
     this.publicDir = '../public';
-    this.actionsDir = 'actions';
   }
 
 }
