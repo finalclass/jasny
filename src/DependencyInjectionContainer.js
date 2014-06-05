@@ -5,13 +5,21 @@ var DependencyInjectionContainer = (function () {
     function DependencyInjectionContainer() {
         this.beans = {};
         this.unresolvedBeans = {};
+        this.isResolveOrdered = false;
     }
     DependencyInjectionContainer.prototype.register = function (name, bean) {
-        var _this = this;
         this.unresolvedBeans[name] = new BeanDefinition(name, bean);
-        setTimeout(function () {
-            return _this.resolve();
-        });
+        this.orderResolving();
+    };
+
+    DependencyInjectionContainer.prototype.orderResolving = function () {
+        var _this = this;
+        if (!this.isResolveOrdered) {
+            setTimeout(function () {
+                _this.isResolveOrdered = false;
+                _this.resolve();
+            });
+        }
     };
 
     DependencyInjectionContainer.prototype.resolve = function () {
@@ -48,7 +56,6 @@ var DependencyInjectionContainer = (function () {
                 var beanName = item[varName];
             }
 
-            console.log(varName, beanName);
             var beanDefToInject = this.findDefinition(beanName);
             if (!beanDefToInject) {
                 return false;

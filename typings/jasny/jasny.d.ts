@@ -50,7 +50,7 @@ declare module "jasny" {
     private enableStaticFileAccess();
     private allowCORSFromAll();
   }
-  export class Action implements IBean {
+  class Action implements IBean {
     public req: express.Request;
     public res: express.Response;
     constructor();

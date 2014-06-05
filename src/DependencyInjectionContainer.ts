@@ -7,15 +7,26 @@ class DependencyInjectionContainer {
 
   private beans:HashTable<BeanDefinition>;
   private unresolvedBeans:HashTable<BeanDefinition>;
+  private isResolveOrdered:boolean;
 
   constructor() {
     this.beans = {};
     this.unresolvedBeans = {};
+    this.isResolveOrdered = false;
   }
 
   public register(name:string, bean:any):void {
     this.unresolvedBeans[name] = new BeanDefinition(name, bean);
-    setTimeout(() => this.resolve());
+    this.orderResolving();
+  }
+
+  private orderResolving() : void {
+    if (!this.isResolveOrdered) {
+      setTimeout(() => {
+        this.isResolveOrdered = false;
+        this.resolve();
+      });
+    }
   }
 
   private resolve():void {
@@ -51,7 +62,6 @@ class DependencyInjectionContainer {
         var beanName:string = item[varName];
       }
 
-      console.log(varName, beanName);
       var beanDefToInject:BeanDefinition = this.findDefinition(beanName);
       if (!beanDefToInject) {
         return false;
